@@ -2,10 +2,93 @@
 #include <stdlib.h>    // exit - ale exit trzeba kiedyś usunąć i nie będzie to potrzebne
 #include "alex.h"      // analizator leksykalny
 #include "fun_stack.h" // stos funkcji
+#include "parser.h"
 
-#define MAXINDENTLENGHT 256 // maks długość identyfikatora
+#define MAXINDENTLENGTH 256 // maks długość identyfikatora
 
-void analizatorSkladni(char *inpname)
+//lista wezwan funkcji
+typedef struct analysisResult
+{
+  char* file;
+  char* functionName;
+  char* prototypeName;
+  char* definitionName;
+
+  int lineWithPrototype;
+  int lineWithDefinition;
+} analysisResult;
+
+typedef struct analysisResultArray
+{
+  analysisResult* analysisResults;
+  int size;
+} analysisResultArray;
+
+typedef struct analysisResultFuncCalls
+{
+  analysisResult* analysisResult;
+
+} analysisResultFuncCalls;
+
+// typedef struct analysisFunctionBody
+// {
+//   char* fileName;
+//   int line;
+// } analysisFunctionBody;
+
+analysisResultArray analysisResults;
+analysisResultFuncCalls analysisFuncCalls;
+
+//sprawdzamy, czy nie przechowujemy juz tej funkcji
+int checkForFuncInStore(char* name)
+{
+  for (int i = 0; i< analysisResults.size; i++)
+    if (strcmp(analysisResults.analysisResults[i].functionName, name) == 0)
+      return i;
+  return -99;
+}
+
+//dodajemy uzycie funkcji
+// void addUsage(analysisFunctionBody **arr, char *fileName, int *size, int line)
+// {
+//   *arr = realloc(*arr, (*size + 1) * sizeof(**arr));
+//   (*arr)[*size] = createAnalysisFuncBody(fileName, line);
+//   ++*size;
+// }
+
+// analysisFunctionBody createAnalysisFuncBody(char* fileName, int line)
+// {
+//   analysisFunctionBody a;
+//   a.fileName = malloc((strlen(fileName) + 1) * sizeof(*a.fileName));
+//   strcpy(a.fileName, fileName);
+//   a.line = line;
+//   return a;
+// }
+
+//dodajemy do wyniku wywolanie
+void store_add_call (char* functionName, int line, char* fileName)
+{
+  if (checkForFuncInStore(functionName) == -99)
+    return;
+  analysisResults.analysisResults->
+}
+
+//dodajemy do wyniku prototyp funkcji
+void store_add_proto (char* functionName, int line, char* fileName)
+{
+  analysisResults.analysisResults->prototypeName = functionName;
+  analysisResults.analysisResults->lineWithPrototype = line;
+  analysisResults.analysisResults->file = fileName;
+}
+
+//dodajemy do wyniku definicje funkcji
+void store_add_def (char* functionName, int line, char* fileName)
+{
+  analysisResults.analysisResults->definitionName = functionName;
+  analysisResults.analysisResults->
+}
+
+void analizatorSkladni (char *inpname)
 { // przetwarza plik inpname
 
   FILE *in = fopen(inpname, "r");
@@ -79,13 +162,13 @@ void analizatorSkladni(char *inpname)
       fprintf(stderr, "\nBUUUUUUUUUUUUUUUUUUUUUU!\n"
                       "W pliku %s (linia %d) są błędy składni.\n"
                       "Kończę!\n\n",
-              inpname, alex_getNL());
+              inpname, alex_getLN());
       exit(1); // to nie jest najlepsze, ale jest proste ;-)
     }
 
     break;
     default:
-      break;
+    break;
     }
     lex = alex_nextLexem();
   }

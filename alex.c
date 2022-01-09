@@ -12,12 +12,26 @@ void alex_init4file(FILE *in)
   ci = in;
 }
 
+int isKeyword(char* str)
+{
+  char* keywords[] = { "while", "for", "do", "switch", "return", "sizeof", "auto", "break",
+						"case", "const", "continue", "default", "if", "else", "enum", "extern",
+						"static", "signed", "goto", "inline", "short", "long", "struct", "typedef",
+						"union", "unsigned", "char", "double", "float", "int" };
+  for (int i = 0; i < sizeof(keywords) / sizeof(keywords[0]); i++)
+    if (strcmp(str, keywords[i]) == 0)
+      return 1;
+  return 0;
+}
+
 lexem_t alex_nextLexem(void)
 {
   int c;
   while ((c = fgetc(ci)) != EOF)
   {
-    if (isspace(c))
+    if (c == '\n')
+      ln++;
+    else if (isspace(c))
       continue;
     else if (c == '\n')
       ln++;
@@ -36,6 +50,7 @@ lexem_t alex_nextLexem(void)
       while (isalnum(c = fgetc(ci)))
         ident[i++] = c;
       ident[i] = '\0';
+      ungetc(c, ci);
       return isKeyword(ident) ? OTHER : IDENT;
     }
     else if (c == '"')
