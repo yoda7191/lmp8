@@ -1,5 +1,6 @@
 #include "alex.h"
 
+#include <string.h>
 #include <ctype.h>
 
 static int ln = 0;
@@ -18,7 +19,8 @@ int isKeyword(char* str)
 						"case", "const", "continue", "default", "if", "else", "enum", "extern",
 						"static", "signed", "goto", "inline", "short", "long", "struct", "typedef",
 						"union", "unsigned", "char", "double", "float", "int" };
-  for (int i = 0; i < sizeof(keywords) / sizeof(keywords[0]); i++)
+  int temp = sizeof(keywords) / sizeof(keywords[0]);
+  for (int i = 0; i < temp; i++)
     if (strcmp(str, keywords[i]) == 0)
       return 1;
   return 0;

@@ -7,97 +7,85 @@
 #define MAXINDENTLENGTH 256 // maks długość identyfikatora
 
 //lista wezwan funkcji
-typedef struct callResult
+typedef struct analysisResult
 {
   char* file;
   char* functionName;
-  int line;
-} callResult;
-typedef struct callResultArray
+  char* prototypeName;
+  char* definitionName;
+
+  int lineWithPrototype;
+  int lineWithDefinition;
+} analysisResult;
+
+typedef struct analysisResultArray
 {
-  callResult* callResults;
+  analysisResult* analysisResults;
   int size;
-} callResultArray;
+} analysisResultArray;
 
+typedef struct analysisResultFuncCalls
+{
+  analysisResult* analysisResult;
 
-typedef struct protoResult
-{
-  char* file;
-  char* functionName;
-  int line;
-} protoResult;
-typedef struct protoResultArray
-{
-  protoResult* protoResults;
-  int size;
-} protoResultArray;
+} analysisResultFuncCalls;
 
-typedef struct defResult
-{
-  char* file;
-  char* functionName;
-  int line;
-} defResult;
-typedef struct defResultArray
-{
-  defResult* defResults;
-  int size;
-} defResultArray;
+// typedef struct analysisFunctionBody
+// {
+//   char* fileName;
+//   int line;
+// } analysisFunctionBody;
 
-callResultArray callResults;
-protoResultArray protoResults;
-defResultArray defResults;
+analysisResultArray analysisResults;
+analysisResultFuncCalls analysisFuncCalls;
 
 //sprawdzamy, czy nie przechowujemy juz tej funkcji
-// int checkForFuncInStore(char* name)
+int checkForFuncInStore(char* name)
+{
+  for (int i = 0; i< analysisResults.size; i++)
+    if (strcmp(analysisResults.analysisResults[i].functionName, name) == 0)
+      return i;
+  return -99;
+}
+
+//dodajemy uzycie funkcji
+// void addUsage(analysisFunctionBody **arr, char *fileName, int *size, int line)
 // {
-//   for (int i = 0; i< defResults.size; i++)
-//     if (strcmp(defResults.defResults[i].functionName, name) == 0)
-//       return i;
-//   return -99;
+//   *arr = realloc(*arr, (*size + 1) * sizeof(**arr));
+//   (*arr)[*size] = createAnalysisFuncBody(fileName, line);
+//   ++*size;
+// }
+
+// analysisFunctionBody createAnalysisFuncBody(char* fileName, int line)
+// {
+//   analysisFunctionBody a;
+//   a.fileName = malloc((strlen(fileName) + 1) * sizeof(*a.fileName));
+//   strcpy(a.fileName, fileName);
+//   a.line = line;
+//   return a;
 // }
 
 //dodajemy do wyniku wywolanie
 void store_add_call (char* functionName, int line, char* fileName)
 {
-  callResults.callResults->functionName = functionName;
-  callResults.callResults->file = fileName;
-  callResults.callResults->line = line;
-  callResults.size++;
+  if (checkForFuncInStore(functionName) == -99)
+    return;
+  analysisResults.analysisResults->
 }
 
 //dodajemy do wyniku prototyp funkcji
 void store_add_proto (char* functionName, int line, char* fileName)
 {
-  protoResults.protoResults->functionName = functionName;
-  protoResults.protoResults->line = line;
-  protoResults.protoResults->file = fileName;
-  protoResults.size++;
+  analysisResults.analysisResults->prototypeName = functionName;
+  analysisResults.analysisResults->lineWithPrototype = line;
+  analysisResults.analysisResults->file = fileName;
 }
 
 //dodajemy do wyniku definicje funkcji
 void store_add_def (char* functionName, int line, char* fileName)
 {
-  // if (checkForFuncInStore(functionName) == -99)
-  //   return;
-  defResults.defResults->file = fileName;
-  defResults.defResults->functionName = functionName;
-  defResults.defResults->line = line;
-  defResults.size++;
-}
-
-void printResults()
-{
-  for(int i = 0; i < defResults.size; i++)
-  {
-    printf("Funkcja: %s \n", defResults.defResults[i].functionName);
-    printf("\t Prototyp: \n");
-    printf("\t\t %s linia %d\n", protoResults.protoResults[i].file, protoResults.protoResults[i].line);
-    printf("\t Definicja: \n");
-    printf("\t\t %s linia %d\n", defResults.defResults[i].file, defResults.defResults[i].line);
-    printf("\t Uzycie\n");
-    printf("\t\t %s linia %d\n", callResults.callResults[i].file, callResults.callResults[i].line);
-  }
+  analysisResults.analysisResults->definitionName = functionName;
+  analysisResults.analysisResults->
 }
 
 void analizatorSkladni (char *inpname)
