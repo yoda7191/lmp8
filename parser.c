@@ -83,29 +83,25 @@ void store_add_def (char* functionName, int line, char* fileName)
   // if (checkForFuncInStore(functionName) == -99)
   //   return;
   //char* temp = malloc (sizeof(fileName) * ( strlen(fileName) + 1 ) );
-  fprintf(stderr, "test1\n");
   defResults.defResults->file = strdup(fileName);
-  fprintf(stderr, "test2\n");
   defResults.defResults->functionName = strdup(functionName);
-  fprintf(stderr, "test3\n");
   defResults.defResults->line = line;
-  fprintf(stderr, "test4\n");
   defResults.size++;
 }
 
 void printResults()
 {
   //tymczasowy komentarz, proba "ogarniecia", dlaczego pojawia sie core dumped
-  //for(int i = 0; i < defResults.size; i++)
-  //{
+  for(int i = 0; i < defResults.size; i++)
+  {
     printf("Funkcja: %s \n", defResults.defResults[0].functionName);
     printf("\t Prototyp: \n");
-    printf("\t\t %s linia %d\n", protoResults.protoResults[0].file, protoResults.protoResults[0].line);
+    printf("\t\t %s linia %d\n", protoResults.protoResults[0].file, protoResults.protoResults[0].line + 1);
     printf("\t Definicja: \n");
-    printf("\t\t %s linia %d\n", defResults.defResults[0].file, defResults.defResults[0].line);
+    printf("\t\t %s linia %d\n", defResults.defResults[0].file, defResults.defResults[0].line + 1);
     printf("\t Uzycie\n");
-    printf("\t\t %s linia %d\n", callResults.callResults[0].file, callResults.callResults[0].line);
-  //}
+    printf("\t\t %s linia %d\n", callResults.callResults[0].file, callResults.callResults[0].line + 1);
+  }
 }
 
 void analizatorSkladni (char *inpname)
@@ -160,19 +156,12 @@ void analizatorSkladni (char *inpname)
                                          // za identyfikatorem znajdującym się na wierzchołku stosu
         lexem_t nlex = alex_nextLexem(); // bierzemy nast leksem
 
+        if (nlex == OPEBRA)
+          nbra++;
         if (nlex == OPEBRA) // nast. leksem to klamra a więc mamy do czynienia z call. funkcji
-        {
-          char* temp = get_from_fun_stack();
-          fprintf (stderr, "%s\n", temp);
-          int temp2 = alex_getLN();
-          fprintf (stderr, "%d\n", temp2);
-          char* temp3 = inpname;
-          fprintf (stderr, "%s\n", temp3);
-          store_add_def(temp, temp2, temp3);
-        }
+          store_add_def(get_from_fun_stack(), alex_getLN(), inpname);
         else if (nbra == 0) // nast. leksem to nie { i jesteśmy poza blokami - to musi być prototyp
           store_add_proto(get_from_fun_stack(), alex_getLN(), inpname);
-
         else // nast. leksem to nie { i jesteśmy wewnątrz bloku - to zapewne wywołanie
           store_add_call(get_from_fun_stack(), alex_getLN(), inpname);
       }

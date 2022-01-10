@@ -32,7 +32,10 @@ lexem_t alex_nextLexem(void)
   while ((c = fgetc(ci)) != EOF)
   {
     if (c == '\n')
+    {
       ln++;
+      continue;
+    }
     else if (isspace(c))
       continue;
     else if (c == '\n')
@@ -61,7 +64,7 @@ lexem_t alex_nextLexem(void)
          i \\ w napisie 
       */
       int cp = c;
-      while ((c = fgetc(ci)) != EOF && c != '"' && cp == '\\')
+      while ((c = fgetc(ci)) != EOF && c != '"')
       {
         cp = c;
       }

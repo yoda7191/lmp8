@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <string.h>
 #include "fun_stack.h"
 #include "global.h"
 
@@ -12,7 +13,8 @@ struct SNode* newNode(int par_level, char *funame)
 {
 	struct SNode* sNode = malloc(sizeof(struct SNode));
 	sNode->par_level = par_level;
-	sNode->funame = funame;
+	sNode->funame = malloc(strlen(funame) * (sizeof(*funame)+1));
+	sNode->funame = strdup(funame);
 	sNode->next = NULL;
 	return sNode;
 }
