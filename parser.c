@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>    // exit - ale exit trzeba kiedyś usunąć i nie będzie to potrzebne
 #include "alex.h"      // analizator leksykalny
 #include "fun_stack.h" // stos funkcji
@@ -6,7 +7,7 @@
 
 #define MAXINDENTLENGTH 256 // maks długość identyfikatora
 
-//lista wezwan funkcji
+//lista wywolan funkcji
 typedef struct callResult
 {
   char* file;
@@ -19,7 +20,7 @@ typedef struct callResultArray
   int size;
 } callResultArray;
 
-
+//list prototypow funkcji
 typedef struct protoResult
 {
   char* file;
@@ -32,6 +33,7 @@ typedef struct protoResultArray
   int size;
 } protoResultArray;
 
+//lista definicji funkcji
 typedef struct defResult
 {
   char* file;
@@ -60,8 +62,8 @@ defResultArray defResults;
 //dodajemy do wyniku wywolanie
 void store_add_call (char* functionName, int line, char* fileName)
 {
-  callResults.callResults->functionName = functionName;
-  callResults.callResults->file = fileName;
+  callResults.callResults->functionName = strdup(functionName);
+  callResults.callResults->file = strdup(fileName);
   callResults.callResults->line = line;
   callResults.size++;
 }
@@ -69,9 +71,9 @@ void store_add_call (char* functionName, int line, char* fileName)
 //dodajemy do wyniku prototyp funkcji
 void store_add_proto (char* functionName, int line, char* fileName)
 {
-  protoResults.protoResults->functionName = functionName;
+  protoResults.protoResults->functionName = strdup(functionName);
   protoResults.protoResults->line = line;
-  protoResults.protoResults->file = fileName;
+  protoResults.protoResults->file = strdup(fileName);
   protoResults.size++;
 }
 
@@ -80,31 +82,39 @@ void store_add_def (char* functionName, int line, char* fileName)
 {
   // if (checkForFuncInStore(functionName) == -99)
   //   return;
-  defResults.defResults->file = fileName;
-  defResults.defResults->functionName = functionName;
+  //char* temp = malloc (sizeof(fileName) * ( strlen(fileName) + 1 ) );
+  fprintf(stderr, "test1\n");
+  defResults.defResults->file = strdup(fileName);
+  fprintf(stderr, "test2\n");
+  defResults.defResults->functionName = strdup(functionName);
+  fprintf(stderr, "test3\n");
   defResults.defResults->line = line;
+  fprintf(stderr, "test4\n");
   defResults.size++;
 }
 
 void printResults()
 {
-  for(int i = 0; i < defResults.size; i++)
-  {
-    printf("Funkcja: %s \n", defResults.defResults[i].functionName);
+  //tymczasowy komentarz, proba "ogarniecia", dlaczego pojawia sie core dumped
+  //for(int i = 0; i < defResults.size; i++)
+  //{
+    printf("Funkcja: %s \n", defResults.defResults[0].functionName);
     printf("\t Prototyp: \n");
-    printf("\t\t %s linia %d\n", protoResults.protoResults[i].file, protoResults.protoResults[i].line);
+    printf("\t\t %s linia %d\n", protoResults.protoResults[0].file, protoResults.protoResults[0].line);
     printf("\t Definicja: \n");
-    printf("\t\t %s linia %d\n", defResults.defResults[i].file, defResults.defResults[i].line);
+    printf("\t\t %s linia %d\n", defResults.defResults[0].file, defResults.defResults[0].line);
     printf("\t Uzycie\n");
-    printf("\t\t %s linia %d\n", callResults.callResults[i].file, callResults.callResults[i].line);
-  }
+    printf("\t\t %s linia %d\n", callResults.callResults[0].file, callResults.callResults[0].line);
+  //}
 }
 
 void analizatorSkladni (char *inpname)
 { // przetwarza plik inpname
 
   FILE *in = fopen(inpname, "r");
-
+  defResults.defResults = malloc (sizeof(*defResults.defResults));
+  protoResults.protoResults = malloc (sizeof(*protoResults.protoResults));
+  callResults.callResults = malloc (sizeof(*callResults.callResults));
   int nbra = 0; // bilans nawiasów klamrowych {}
   int npar = 0; // bilans nawiasów zwykłych ()
 
@@ -140,6 +150,8 @@ void analizatorSkladni (char *inpname)
       npar++;
       break;
 
+    
+
     case CLOPAR: // zamykający nawias - to może być koniec prototypu, nagłówka albo wywołania
     {
       if (top_of_funstack() == npar)
@@ -148,9 +160,16 @@ void analizatorSkladni (char *inpname)
                                          // za identyfikatorem znajdującym się na wierzchołku stosu
         lexem_t nlex = alex_nextLexem(); // bierzemy nast leksem
 
-        if (nlex == OPEBRA) // nast. leksem to klamra a więc mamy do czynienia z def. funkcji
-          store_add_def(get_from_fun_stack(), alex_getLN(), inpname);
-
+        if (nlex == OPEBRA) // nast. leksem to klamra a więc mamy do czynienia z call. funkcji
+        {
+          char* temp = get_from_fun_stack();
+          fprintf (stderr, "%s\n", temp);
+          int temp2 = alex_getLN();
+          fprintf (stderr, "%d\n", temp2);
+          char* temp3 = inpname;
+          fprintf (stderr, "%s\n", temp3);
+          store_add_def(temp, temp2, temp3);
+        }
         else if (nbra == 0) // nast. leksem to nie { i jesteśmy poza blokami - to musi być prototyp
           store_add_proto(get_from_fun_stack(), alex_getLN(), inpname);
 
@@ -184,4 +203,5 @@ void analizatorSkladni (char *inpname)
     }
     lex = alex_nextLexem();
   }
+  printResults();
 }
